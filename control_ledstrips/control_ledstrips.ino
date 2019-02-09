@@ -23,7 +23,9 @@
 CRGB leds0[NUM_LEDS];
 CRGB leds1[NUM_LEDS];
 //CRGBPalette16 currentPalette = HeatColors_p;
-CRGBPalette16 currentPalette = CRGBPalette16( CRGB::Black, CRGB::Red, CRGB::Red, CRGB::Yellow);
+CRGBPalette16 firePalette = CRGBPalette16(CRGB::Black, CRGB::Red, CRGB::Red, CRGB::Yellow);
+//CRGBPalette16 waterPalette = CRGBPalette16(CRGB::Green, CRGB::Green, CRGB::Green, CRGB::Green, CRGB::Green, CRGB::Yellow, CRGB::Green, CRGB::Yellow, CRGB::Green, CRGB::Green, CRGB::Blue, CRGB::Green, CRGB::Green, CRGB::Yellow, CRGB::Yellow, CRGB::Green);
+CRGBPalette16 waterPalette = CRGBPalette16(CRGB::Green, CRGB::Blue, CRGB::Green, CRGB::Blue, CRGB::Green, CRGB::Yellow, CRGB::Green, CRGB::Yellow, CRGB::Green, CRGB::Green, CRGB::Blue, CRGB::Green, CRGB::Green, CRGB::Yellow, CRGB::Yellow, CRGB::Green);
 
 // modes: 0 = light patterns, 1 = image stream (24bit), 2 = music patterns, 3 = NES video stream
 uint8_t mode = 0;
@@ -38,7 +40,7 @@ int brightness = 128;
 
 elapsedMillis elapsedTime;
 
-int state = 30;
+uint8_t state = 30;
 
 void setup() {
 
@@ -70,6 +72,7 @@ void loop() {
       //leds0[i] = leds1[i]= CRGB::White;
       leds0[i] = leds1[i]= CRGB( 255, 125, 15);
     }
+    waitingTime = REFRESH_WAIT;
   }
 
   // mode - TODO
@@ -78,6 +81,7 @@ void loop() {
       //leds0[i] = leds1[i]= CRGB::White;
       leds0[i] = leds1[i]= CRGB( 255, 165, 110);
     }
+    waitingTime = REFRESH_WAIT;
   }
 
   // mode - TODO
@@ -86,24 +90,27 @@ void loop() {
       //leds0[i] = leds1[i]= CRGB::White;
       leds0[i] = leds1[i]= CRGB( 255, 220, 180);
     }
+    waitingTime = REFRESH_WAIT;
   }
 
   // mode - TODO
   else if (mode == 1) {
     random16_add_entropy( random());  // Add entropy to random number generator; we use a lot of it.
     Fire2012WithPalette();
+    waitingTime = REFRESH_WAIT;
   }
 
   // mode - dynamic patterns (hardcoded) - perhaps via several sub-modes
   else { // mode == 0
     //showPatterns();
-    for (int i = 0; i < NUM_LEDS; i++) {
-      leds0[i] = CRGB::Blue;
-      leds1[i] = CRGB::Green;
-    }
+    //fill_rainbow(leds0, NUM_LEDS, (state+1)%256, 7);
+    //fill_rainbow(leds1, NUM_LEDS, (state+1)%256, 6);
+    fill_palette(leds0, NUM_LEDS, state, 6, waterPalette, 128, LINEARBLEND);
+    fill_palette(leds1, NUM_LEDS, state, 6, waterPalette, 128, LINEARBLEND);
+    state++;
+    waitingTime = 200;
   }
 
-  waitingTime = REFRESH_WAIT;
   FastLED.show();
   timedDelay(waitingTime);
 }
@@ -189,6 +196,6 @@ void Fire2012WithPalette()   // defines a new function
     // Scale the heat value from 0-255 down to 0-240
     // for best results with color palettes.
     byte colorindex = scale8( heat[NUM_LEDS-j-1], 248);
-    leds0[j] = leds1[j] = ColorFromPalette( currentPalette, colorindex);
+    leds0[j] = leds1[j] = ColorFromPalette( firePalette, colorindex);
   }
 }
