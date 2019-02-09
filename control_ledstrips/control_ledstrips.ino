@@ -35,6 +35,7 @@ int waitingTime = INPUT_WAIT;
 
 int photoRSTState = 128;      // photo resistor for regulating brightness
 float photoLeakeRate = 0.9; // for smoothing the photo resistor [0,1]
+const float powf_1023 = powf(1023,2);
 
 int brightness = 128;
 
@@ -128,10 +129,13 @@ void checkInputs() {
 
   mode = (int)round(analogRead(POTI_MODE) * (modeMax-1) / 1023.);
 
-  //photoRSTState = (int)round(photoLeakeRate * photoRSTState + (1.-photoLeakeRate) * (analogRead(PHOTO_RST_PIN) * 0.25 * 0.75 + 63));
-  photoRSTState = 255;
-  brightness = (int)round(analogRead(POTI_BRIGHT) * 0.249 / 255. * photoRSTState);
+  //photoRSTState = (int)round(photoLeakeRate * photoRSTState + (1.-photoLeakeRate) * (analogRead(PHOTO_RST_PIN) / 1023 * 255 * 0.75 + 63));
+  photoRSTState = 255; // photo sensor not used
 
+  //brightness = (int)round(analogRead(POTI_BRIGHT) / 1023 * 255 / 255. * photoRSTState); // linear
+  //brightness = (int)round(powf(0.+analogRead(POTI_BRIGHT),2) / powf_1023 * 255 / 255. * photoRSTState); // quadratic
+  brightness = (int)round(powf(0.+analogRead(POTI_BRIGHT),2) / powf_1023 * photoRSTState);
+	
 //  Serial.print("Check inputs: ");       
 //  Serial.print(" mode: ");
 //  Serial.print(mode);       
